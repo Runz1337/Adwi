@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; background: #7a1428; display: flex; flex-wrap: wrap; align-items: flex-start; }
+  .cell { border: 1px dashed #ffffff33; margin: 4px; position: relative; }
+  .lbl { position: absolute; top: 2px; left: 4px; font-size: 11px; color: #fff9; z-index: 2; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<div id="cells" style="display:flex;flex-wrap:wrap"></div>
+<script type="module">
+  import CUTS from '/dev/cuts-data.js';
+  const SERIF = `'Newsreader', Georgia, serif`;
+  const SCRIPT = `'Dancing Script', cursive`;
+  const specs = ['400 64px "Newsreader"', '700 64px "Newsreader"', '400 64px "Dancing Script"', '700 64px "Dancing Script"'];
+  await Promise.race([Promise.all(specs.map((s) => document.fonts.load(s).catch(() => {}))), new Promise((r) => setTimeout(r, 2500))]);
+  function fontString(style, italic, bold, px) {
+    const fam = style === 'script' ? SCRIPT : SERIF;
+    return `${italic ? 'italic ' : ''}${bold ? 700 : 500} ${px}px ${fam}`;
+  }
+  const dims = [[856, 381], [860, 518], [283, 735], [1024, 363], [952, 502], [283, 735]];
+  const holder = document.getElementById('cells');
+  CUTS.forEach((cut, i) => {
+    const [rw, rh] = dims[i];
+    const scale = 0.5;
+    const c = document.createElement('canvas');
+    c.width = rw * scale; c.height = rh * scale;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, c.width, c.height);
+    g.addColorStop(0, '#8a1a30'); g.addColorStop(0.5, '#6e1124'); g.addColorStop(1, '#93253c');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.scale(scale, scale);
+    ctx.textBaseline = 'alphabetic';
+    const draw = (text, x, y, px, style, italic, bold) => {
+      ctx.save();
+      ctx.shadowColor = 'rgba(70, 8, 30, 0.42)';
+      ctx.shadowBlur = px * 0.16;
+      ctx.shadowOffsetY = px * 0.03;
+      ctx.font = fontString(style, italic, bold, px);
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'left';
+      ctx.fillText(text, x * rw, y * rh);
+      ctx.restore();
+    };
+    draw(cut.big, cut.bigX, cut.bigY, cut.bigH * rh, 'serif', false, true);
+    if (cut.pct) draw('%', cut.pct[0], cut.pct[1], cut.pct[2] * rh, 'serif', false, false);
+    for (const l of cut.lines) draw(l.t, l.x, l.y, l.s * rh, l.style, l.style === 'script', !!l.b);
+    const cell = document.createElement('div');
+    cell.className = 'cell';
+    const lbl = document.createElement('span');
+    lbl.className = 'lbl';
+    lbl.textContent = `R${i} ${rw}x${rh}`;
+    cell.appendChild(lbl);
+    cell.appendChild(c);
+    holder.appendChild(cell);
+  });
+  window.__ready = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<style>
+  body { margin: 0; background: #222; font-family: monospace; color: #fff; }
+  #info { position: fixed; top: 6px; left: 8px; z-index: 5; font-size: 12px; }
+  canvas { display: block; image-rendering: auto; }
+  #holder { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+</style>
+<script type="importmap">
+  { "imports": {
+      "three": "/dev/vendor/three.module.js",
+      "three/addons/": "/dev/vendor/"
+  } }
+</script>
+</head>
+<body>
+<div id="info">atlas viewer</div>
+<script>
+  window.__err = '';
+  window.addEventListener('error', (e) => {
+    window.__err = (e.message || 'err') + ' @' + (e.filename || '') + ':' + (e.lineno || '');
+    document.getElementById('info').textContent = 'ERR: ' + window.__err;
+  });
+  window.addEventListener('unhandledrejection', (e) => {
+    window.__err = 'REJ: ' + ((e.reason && e.reason.message) || e.reason);
+    document.getElementById('info').textContent = window.__err;
+  });
+</script>
+<div id="holder"></div>
+<script type="module">
+  import * as THREE from 'three';
+  import { KTX2Loader } from 'three/addons/KTX2Loader.js';
+
+  const params = new URLSearchParams(location.search);
+  const file = params.get('tex') || 'texts.ktx2';
+  // optional regions: x,y,w,h;x,y,w,h... (atlas pixel coords)
+  const regions = (params.get('regions') || '').split(';').filter(Boolean).map((r) => r.split(',').map(Number));
+  const mode = params.get('mode') || 'full';
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.getElementById('holder').appendChild(renderer.domElement);
+  const scene = new THREE.Scene();
+  const cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  const ktx2 = new KTX2Loader().setTranscoderPath('/basis/').detectSupport(renderer);
+  const texAny = await ktx2.loadAsync(`/og/atlases/${file}`);
+  const tex = texAny && texAny.texture ? texAny.texture : texAny;
+  document.getElementById('info').textContent = 'loaded ' + (tex && tex.constructor ? tex.constructor.name : typeof tex);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.flipY = false;
+  const img = tex.image;
+  document.getElementById('info').textContent = `${file} ${img.width}x${img.height}`;
+
+  const H = img.height, W = img.width;
+  let geo;
+  if (mode === 'full' && regions.length === 0) {
+    geo = new THREE.PlaneGeometry(2, 2);
+  } else {
+    // draw region outlines as separate quads stacked vertically
+    const group = new THREE.Group();
+    let totalH = 0;
+    const quads = [];
+    for (const [x, y, w, h] of (regions.length ? regions : [[0, 0, W, H]])) {
+      const t = tex.clone();
+      t.needsUpdate = true;
+      t.repeat.set(w / W, h / H);
+      t.offset.set(x / W, 1 - (y + h) / H);
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(1, (h / w)), new THREE.MeshBasicMaterial({ map: t }));
+      m.position.y = -totalH - h / w / 2;
+      totalH += h / w + 0.06;
+      quads.push(m);
+      group.add(m);
+    }
+    const scale = 1.8 / Math.max(...quads.map((q) => q.geometry.parameters.width));
+    group.scale.setScalar(scale);
+    group.position.y = totalH * scale / 2;
+    scene.add(group);
+    const aspect = window.innerWidth / window.innerHeight;
+    cam.left = -1; cam.right = 1; cam.top = 1; cam.bottom = -1;
+    cam.updateProjectionMatrix();
+    const render = () => { renderer.render(scene, cam); requestAnimationFrame(render); };
+    render();
+  }
+  if (mode === 'full' && regions.length === 0) {
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.MeshBasicMaterial({ map: tex }));
+    const aspect = W / H;
+    const va = window.innerWidth / window.innerHeight;
+    if (aspect > va) { const s = va / aspect; m.scale.y = s; } else { const s = aspect / va; m.scale.x = s; }
+    scene.add(m);
+    const render = () => { renderer.render(scene, cam); requestAnimationFrame(render); };
+    render();
+  }
+</script>
+</body>
+</html>
