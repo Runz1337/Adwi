@@ -3,7 +3,6 @@
   "services": {
     "birthday_site": {
       "root": "artifacts/birthday-site",
-      "framework": null,
       "installCommand": "echo 'static export: nothing to install'",
       "buildCommand": "echo 'static export: nothing to build'",
       "outputDirectory": "public"
