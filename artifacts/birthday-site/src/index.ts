@@ -49,16 +49,17 @@ function contentType(filePath: string): string {
   return MIME_TYPES[path.extname(filePath).toLowerCase()] ?? "application/octet-stream";
 }
 
-// Fingerprinted build output and transcoder blobs never change, so they can be
-// cached forever. The model and media payloads are large, so they get a long
-// max-age that still allows a redeploy to be picked up.
+// /basis and /draco are transcoder blobs that never change, so they can be cached
+// forever. /_next/static is deliberately NOT cached: this is a prebuilt export that
+// gets hand-edited in place, and those files are served under content-hashed names,
+// so a long max-age would pin browsers and CDNs to a stale build.
 function cacheControl(urlPath: string): string {
-  if (
-    urlPath.startsWith("/_next/static/") ||
-    urlPath.startsWith("/basis/") ||
-    urlPath.startsWith("/draco/")
-  ) {
+  if (urlPath.startsWith("/basis/") || urlPath.startsWith("/draco/")) {
     return "public, max-age=31536000, immutable";
+  }
+
+  if (urlPath.startsWith("/_next/static/")) {
+    return "public, max-age=0, must-revalidate";
   }
 
   if (
