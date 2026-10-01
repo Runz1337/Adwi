@@ -1,9 +1,15 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "installCommand": "echo 'static export: nothing to install'",
-  "buildCommand": null,
-  "outputDirectory": "artifacts/birthday-site/public",
+  "services": {
+    "birthday_site": {
+      "root": "artifacts/birthday-site",
+      "framework": null,
+      "installCommand": "echo 'static export: nothing to install'",
+      "buildCommand": "echo 'static export: nothing to build'",
+      "outputDirectory": "public"
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": { "service": "birthday_site" } }],
   "headers": [
     {
       "source": "/_next/static/(.*)",

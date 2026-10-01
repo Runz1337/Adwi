@@ -3,19 +3,23 @@ previewPath = "/"
 title = "Birthday Site"
 description = "An interactive 3D birthday experience built with Three.js and MediaPipe hand tracking."
 version = "1.0.0"
-id = "artifacts/birthday-site"
-router = "path"
+id = "jZ-tcWae78knkSjxVG80xQ"
 
 [[services]]
+localPort = 25071
 name = "web"
 paths = [ "/" ]
-localPort = 25071
 
 [services.development]
 run = "pnpm --filter @workspace/birthday-site run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/birthday-site", "run", "build" ]
+
+[services.production.build]
+args = [ "pnpm", "--filter", "@workspace/birthday-site", "run", "build" ]
+
+[services.production.build.env]
+NODE_ENV = "production"
 
 [services.production.run]
 # we don't run through pnpm to make startup faster in production
@@ -24,6 +28,9 @@ args = [ "node", "--enable-source-maps", "artifacts/birthday-site/dist/index.mjs
 [services.production.run.env]
 PORT = "25071"
 NODE_ENV = "production"
+
+[services.production.health.startup]
+path = "/"
 
 [services.env]
 PORT = "25071"

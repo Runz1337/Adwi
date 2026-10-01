@@ -19,9 +19,16 @@ Served as a fully static Next.js export.
 
 The export is already built and committed, so Vercel needs no install and no build.
 
-- `vercel.json` (repo root) sets `framework: null`, an empty `buildCommand`, and
-  `outputDirectory: artifacts/birthday-site/public`, so the committed files are served
-  as-is. `.vercelignore` keeps the upload to the export only.
+- `vercel.json` (repo root) uses the **services** model: one service `birthday_site`
+  rooted at `artifacts/birthday-site` with `framework: null`, a no-op `installCommand`/
+  `buildCommand`, and `outputDirectory: public`, plus a catch-all top-level rewrite that
+  sends `/(.*)` to that service. `.vercelignore` keeps the upload to the export only.
+- **The project's Framework Preset must be `Services`.** Vercel shows a "Multiple
+  applications detected" import screen for this repo — zero-config finds
+  `artifacts/api-server` (Express) and `artifacts/mockup-sandbox` (Vite) but no framework
+  in `artifacts/birthday-site`, because that package only ships a prebuilt export. Explicit
+  `services` in `vercel.json` is what makes the import screen accept the project; the
+  birthday site is never listed as a detected app.
 - **Root Directory must be the repo root.** A root directory of `artifacts/birthday-site`
   finds no config and would serve that folder's source instead of the site.
 - This config is for the static site only. `artifacts/api-server` and
@@ -51,6 +58,10 @@ The export is already built and committed, so Vercel needs no install and no bui
 
 ## Architecture decisions
 
+- Vercel gets a single static service with no install and no build. Everything that was
+  top-level (`framework`, `buildCommand`, `outputDirectory`) moved into the service because
+  those keys are invalid at the top level once `services` is present; `headers` and the
+  rewrite stay at the top level since they are public routing.
 - The export is served by a hand-written `node:http` server rather than a framework or
   Replit's static serving. It needs exact `Content-Type` values for `.ktx2`, `.glb`,
   `.wasm`, and `.task`, plus range requests so the `<audio>` and `<video>` elements can
