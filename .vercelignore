@@ -1,0 +1,25 @@
+# Only the prebuilt static export in artifacts/birthday-site/public is served, so
+# keep the upload to that folder. Vercel already ignores .git and node_modules.
+
+# monorepo services that this deploy does not run
+artifacts/api-server
+artifacts/mockup-sandbox
+artifacts/birthday-site/src
+artifacts/birthday-site/dist
+artifacts/birthday-site/build.mjs
+artifacts/birthday-site/.replit-artifact
+lib
+scripts
+
+# repo-level noise
+.cache
+.local
+.conversation
+pnpm-lock.yaml
+.replit
+.replitignore
+replit.md
+
+# dev-only files that ship inside the export
+artifacts/birthday-site/public/dev
+artifacts/birthday-site/public/README-HOSTING.txt

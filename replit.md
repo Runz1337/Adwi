@@ -11,7 +11,28 @@ Served as a fully static Next.js export.
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm run vercel:dev` — serve the export the way Vercel would (no server code)
+- `pnpm run vercel:deploy` — deploy to Vercel production
 - Required env: `PORT` — the listen port for the birthday site
+
+## Deploy to Vercel
+
+The export is already built and committed, so Vercel needs no install and no build.
+
+- `vercel.json` (repo root) sets `framework: null`, an empty `buildCommand`, and
+  `outputDirectory: artifacts/birthday-site/public`, so the committed files are served
+  as-is. `.vercelignore` keeps the upload to the export only.
+- **Root Directory must be the repo root.** A root directory of `artifacts/birthday-site`
+  finds no config and would serve that folder's source instead of the site.
+- This config is for the static site only. `artifacts/api-server` and
+  `artifacts/mockup-sandbox` are ignored and are not deployed.
+- Assets are absolute paths and the site owns `/`, so it cannot be mounted under a subpath.
+- Immutable caching is declared for `/_next/static`, `/og`, `/models`, `/basis` and
+  `/mediapipe`. Vercel serves `.ktx2`/`.glb`/`.wasm`/`.task` with usable content types and
+  the CDN handles range requests, so the hand-written server is not needed in production.
+- Gotcha: `og/textures/love-city.png` is JPEG data under a `.png` name (as are several
+  other files in that folder). Browsers sniff image content so it renders, but the served
+  `Content-Type` is technically wrong.
 
 ## Stack
 
