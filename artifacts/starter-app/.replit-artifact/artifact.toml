@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Starter App"
+description = "A clean, runnable web app scaffold with a small welcome screen, ready to customize for a future idea."
+version = "1.0.0"
+id = "artifacts/starter-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25071
+
+[services.development]
+run = "pnpm --filter @workspace/starter-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/starter-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/starter-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25071"
+BASE_PATH = "/"
