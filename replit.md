@@ -37,9 +37,11 @@ The export is already built and committed, so Vercel needs no install and no bui
 - This config is for the static site only. `artifacts/api-server` and
   `artifacts/mockup-sandbox` are ignored and are not deployed.
 - Assets are absolute paths and the site owns `/`, so it cannot be mounted under a subpath.
-- Immutable caching is declared for `/_next/static`, `/og`, `/models`, `/basis` and
-  `/mediapipe`. Vercel serves `.ktx2`/`.glb`/`.wasm`/`.task` with usable content types and
-  the CDN handles range requests, so the hand-written server is not needed in production.
+- Immutable caching is declared for `/og`, `/models`, `/basis` and `/mediapipe`.
+  `/_next/static` is deliberately `public, max-age=0, must-revalidate` — see the
+  hand-editing gotcha below. Vercel serves `.ktx2`/`.glb`/`.wasm`/`.task` with usable
+  content types and the CDN handles range requests, so the hand-written server is not
+  needed in production.
 - Gotcha: `og/textures/love-city.png` is JPEG data under a `.png` name (as are several
   other files in that folder). Browsers sniff image content so it renders, but the served
   `Content-Type` is technically wrong.
@@ -96,6 +98,17 @@ camera moves, gesture interaction, ambient music, and a progress/XP UI.
   those paths — hand tracking appears to load from a CDN at runtime instead. Left in
   place in case the local path is used again.
 - The site is asset-heavy: budget ~67 MB on first load.
+- **Editing the prebuilt export by hand.** The React source is not in this repo, so text
+  and JS changes are made directly in `public/`. Two rules:
+  - Text lives in **both** `index.html` and the app chunk. React hydration re-renders from
+    the chunk, so changing only `index.html` shows nothing (or a flash before hydration).
+  - Editing a chunk **in place** does not reach browsers. `/_next/static` filenames are
+    content hashes, so the URL is unchanged and any `immutable` cache pins the old bytes.
+    Rename the chunk and update its references (`index.html`, `index.txt`,
+    `__next._full.txt`, `__next.__PAGE__.txt`) when the content changes. `/_next/static` is
+    now revalidated instead of immutable so future edits need less ceremony.
+- Don't delete files under `public/og/textures/` — `love-city.png` and
+  `love-letters-bg.png` are still referenced by the app chunk.
 
 ## Pointers
 
