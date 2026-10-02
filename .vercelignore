@@ -1,15 +1,16 @@
-# Only the prebuilt static export in artifacts/birthday-site/public is served, so
-# keep the upload to that folder. Vercel already ignores .git and node_modules.
+# The site is a prebuilt static export and the wish API is a single dependency-free
+# file, so nothing here needs to be installed or built. Keep the upload to just
+# those two things plus the config that routes between them. Vercel already
+# ignores .git and node_modules.
 
-# monorepo services that this deploy does not run
-artifacts/api-server
+# workspace libraries and tooling: nothing that ships uses them
+lib
+scripts
 artifacts/mockup-sandbox
 artifacts/birthday-site/src
 artifacts/birthday-site/dist
 artifacts/birthday-site/build.mjs
 artifacts/birthday-site/.replit-artifact
-lib
-scripts
 
 # repo-level noise
 .cache

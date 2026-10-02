@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: wishes
+    description: Birthday wish operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,47 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /wishes:
+    get:
+      operationId: listWishes
+      tags: [wishes]
+      summary: List wishes
+      description: Returns the most recent wishes, newest first
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 100
+      responses:
+        "200":
+          description: Wish list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wish"
+    post:
+      operationId: createWish
+      tags: [wishes]
+      summary: Save a wish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateWish"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Wish"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +76,27 @@ components:
           type: string
       required:
         - status
+    CreateWish:
+      type: object
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 280
+      required:
+        - message
+    Wish:
+      type: object
+      properties:
+        id:
+          type: integer
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - message
+        - createdAt
 
