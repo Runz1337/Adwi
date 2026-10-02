@@ -9,8 +9,8 @@
     },
     "wish_api": {
       "root": "wish-api",
-      "installCommand": "",
-      "buildCommand": "",
+      "installCommand": "echo 'zero-dependency function: nothing to install'",
+      "buildCommand": "echo 'zero-dependency function: nothing to build'",
       "entrypoint": "index.js"
     }
   },
