@@ -6,18 +6,9 @@
       "installCommand": "echo 'static export: nothing to install'",
       "buildCommand": "echo 'static export: nothing to build'",
       "outputDirectory": "public"
-    },
-    "wish_api": {
-      "root": "wish-api",
-      "installCommand": "echo 'zero-dependency function: nothing to install'",
-      "buildCommand": "echo 'zero-dependency function: nothing to build'",
-      "entrypoint": "index.js"
     }
   },
-  "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "wish_api" } },
-    { "source": "/(.*)", "destination": { "service": "birthday_site" } }
-  ],
+  "rewrites": [{ "source": "/(.*)", "destination": { "service": "birthday_site" } }],
   "headers": [
     {
       "source": "/_next/static/(.*)",
