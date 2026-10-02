@@ -1308,7 +1308,7 @@ spans.forEach((sp,k)=>{
  if(sp.last){
   let cs=MZ?1:.84;
   c.textAlign="center",c.font=`700 ${78*cs}px ${ud}`,c.fillStyle="#d4507f",
-  c.fillText("and she became home",420,y3+70*cs),uv(c,420,y3+136*cs,17*cs,uh);
+  c.fillText("you're my home.",420,y3+70*cs),uv(c,420,y3+136*cs,17*cs,uh);
   let h2=y3+200*cs;
   c.fillStyle="#7c3352",c.font=`italic 400 ${32*cs}px ${uc}`,
   c.fillText("no candles needed — you being here is the celebration,",420,h2),
